@@ -402,5 +402,11 @@ namespace NFSeTokenA3SignerApi.Controllers
 
             return doc.OuterXml;
         }
+
+        [HttpGet("health")]
+        public IActionResult Health()
+        {
+            return Ok(new { status = "ok", message = "API local funcionando" });
+        }
     }
 }
