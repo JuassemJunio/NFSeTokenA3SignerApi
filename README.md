@@ -1,4 +1,4 @@
-# NFSe Token A3 Signer API 🔐
+# NFSe Token A3 Signer API
 
 ![Net](https://img.shields.io/badge/.NET-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
 ![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white)
@@ -7,13 +7,13 @@ Esta API foi desenvolvida para simplificar o processo de assinatura digital de N
 
 Devido à natureza dos certificados A3 (que residem em hardware criptográfico), esta API atua como um middleware local, expondo endpoints para que aplicações web ou outros serviços possam solicitar assinaturas digitais sem interagir diretamente com os drivers do token.
 
-## 🚀 Funcionalidades
+## Funcionalidades
 
--   🔌 **Interação com Token A3:** Comunicação com o hardware criptográfico para realizar assinaturas.
--   📝 **Assinatura de XML:** Recebe o XML da nota, assina e retorna o documento válido.
--   🌐 **API RESTful:** Endpoints padronizados para fácil integração.
+-    **Interação com Token A3:** Comunicação com o hardware criptográfico para realizar assinaturas.
+-    **Assinatura de XML:** Recebe o XML da nota, assina e retorna o documento válido.
+-    **API RESTful:** Endpoints padronizados para fácil integração.
 
-## 📋 Pré-requisitos
+## Pré-requisitos
 
 Para executar este projeto, você precisará de:
 
@@ -21,7 +21,7 @@ Para executar este projeto, você precisará de:
 * Drivers do seu Token A3 instalados e funcionais na máquina.
 * Token A3 conectado à porta USB.
 
-## 🔧 Instalação e Execução
+## Instalação e Execução
 
 1.  **Clone o repositório:**
     ```bash
@@ -40,7 +40,7 @@ Para executar este projeto, você precisará de:
     dotnet run
     ```
 
-## 📡 Endpoints Principais
+## Endpoints Principais
 
 Abaixo um exemplo de como utilizar o serviço (baseado na estrutura comum de APIs de assinatura):
 
