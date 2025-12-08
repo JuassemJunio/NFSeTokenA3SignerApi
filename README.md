@@ -26,16 +26,15 @@ Abaixo um exemplo de como utilizar o serviço (baseado na estrutura comum de API
 ### 1. Assinar XML em PHP
 
 **POST**
-
-* $wsResponse = Http::timeout(120)->post(http://{{IP}}:5000/api/signing/assinar, [
-* 'signedXmlContent' => $this->xml,
-* 'CnpjEmissor'      => $this->dps['CNPJ'],
-* 'Uri'              => sefin.producaorestrita.nfse.gov.br,
-* ]);
+```PHP
+$wsResponse = Http::timeout(120)->post(http://{{IP}}:5000/api/signing/assinar, [
+'signedXmlContent' => $this->xml,
+'CnpjEmissor'      => $this->dps['CNPJ'],
+'Uri'              => sefin.producaorestrita.nfse.gov.br,
+]);
+```
 
 **EXEMPLO DE DPS**
-
-### **C#**
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.00">
@@ -99,5 +98,6 @@ Abaixo um exemplo de como utilizar o serviço (baseado na estrutura comum de API
 </valores>
 </infDPS>
 </DPS>
+```
      
 Recebe um XML bruto e retorna o XML assinado.
