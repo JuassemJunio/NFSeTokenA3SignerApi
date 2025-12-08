@@ -17,9 +17,7 @@ namespace NFSeTokenA3SignerApi.Controllers
     [Route("api/[controller]")]
     public class SigningController : ControllerBase
     {
-        // ===========================
-        // 🔒 MÉTODO DE ASSINATURA A3
-        // ===========================
+
         [HttpPost("assinar")]
         public IActionResult AssinarXml([FromBody] SigningRequest request)
         {
@@ -46,9 +44,6 @@ namespace NFSeTokenA3SignerApi.Controllers
             }
         }
 
-        // ==========================================================
-        // 🇧🇷 CONSULTA NFSE PELO AMBIENTE NACIONAL (DPS / GOV.BR) - REST
-        // ==========================================================
         [HttpPost("consultar-nfse-nacional")]
         public async Task<IActionResult> ConsultarNfseNacional([FromBody] SendingRequest request)
         {
@@ -74,7 +69,6 @@ namespace NFSeTokenA3SignerApi.Controllers
                     });
                 }
 
-                // Descompacta o XML retornado
                 var gzippedBytes = Convert.FromBase64String(jsonResponse?.nfseXmlGZipB64 ?? string.Empty);
                 await using var compressedStream = new MemoryStream(gzippedBytes);
                 await using var decompressedStream = new MemoryStream();
@@ -85,7 +79,6 @@ namespace NFSeTokenA3SignerApi.Controllers
 
                 var xml = Encoding.UTF8.GetString(decompressedStream.ToArray());
 
-                // Converte XML → JSON
                 var doc = new XmlDocument();
                 doc.LoadXml(xml);
                 var jsonString = JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.Indented);
@@ -103,10 +96,6 @@ namespace NFSeTokenA3SignerApi.Controllers
             }
         }
 
-
-        // ==========================================================
-        // 🇧🇷 ENVIO PARA O AMBIENTE NACIONAL (DPS / GOV.BR) - REST
-        // ==========================================================
         [HttpPost("enviar-nfse-nacional")]
         public async Task<IActionResult> EnviarNfseNacional([FromBody] SendingRequest request)
         {
@@ -191,9 +180,6 @@ namespace NFSeTokenA3SignerApi.Controllers
             return retorno;
         }
 
-        // ==========================================================
-        // 🔧 CRIAÇÃO DO HTTP CLIENT COM CERTIFICADO DIGITAL
-        // ==========================================================
         private async Task<HttpClient> CreateHttpClientAsync(SendingRequest request)
         {
             var cert = FindCertificateByCnpj(request.CnpjEmissor)
@@ -213,11 +199,6 @@ namespace NFSeTokenA3SignerApi.Controllers
             };
         }
 
-
-
-        // ==========================================================
-        // 🇧🇷 VERIFICA SE O DPS JÁ EXISTE (AMBIENTE NACIONAL - GOV.BR)
-        // ==========================================================
         [HttpGet("verificar-dps")]
         public async Task<IActionResult> VerificarDpsNacional(
      [FromQuery] string dpsId,
@@ -266,7 +247,7 @@ namespace NFSeTokenA3SignerApi.Controllers
                     }
                     catch (System.Text.Json.JsonException)
                     {
-                        // Caso o corpo não esteja em JSON válido
+
                         return Ok(new
                         {
                             message = "Identificador do DPS encontrado, mas não foi possível ler o conteúdo retornado.",
@@ -301,11 +282,6 @@ namespace NFSeTokenA3SignerApi.Controllers
             }
         }
 
-
-
-        // ==========================================================
-        // 🧰 UTILITÁRIO: COMPACTA E CONVERTE PARA BASE64
-        // ==========================================================
         private static string CompressToBase64(byte[] data)
         {
             using var output = new MemoryStream();
@@ -316,9 +292,6 @@ namespace NFSeTokenA3SignerApi.Controllers
             return Convert.ToBase64String(output.ToArray());
         }
 
-        // ==========================================================
-        // 🔍 BUSCA CERTIFICADO PELO CNPJ
-        // ==========================================================
         private X509Certificate2 FindCertificateByCnpj(string cnpjEmissor)
         {
             string cnpjLimpo = cnpjEmissor.Replace(".", "").Replace("/", "").Replace("-", "").Trim();
@@ -345,9 +318,6 @@ namespace NFSeTokenA3SignerApi.Controllers
             return cert;
         }
 
-        // ==========================================================
-        // ✍️ ASSINATURA XML COM CERTIFICADO A3
-        // ==========================================================
         private string PerformA3Signing(string xml, string id, string cnpjEmissor)
         {
             string cnpjLimpo = cnpjEmissor.Replace(".", "").Replace("/", "").Replace("-", "").Trim();
@@ -356,14 +326,14 @@ namespace NFSeTokenA3SignerApi.Controllers
             doc.PreserveWhitespace = false;
             doc.LoadXml(xml);
 
-            // Remove assinatura anterior, se existir
             XmlNodeList signatures = doc.GetElementsByTagName("Signature", "http://www.w3.org/2000/09/xmldsig#");
             if (signatures.Count > 0)
                 signatures[0].ParentNode.RemoveChild(signatures[0]);
 
             XmlNode targetNode = doc.SelectSingleNode($"//*[local-name()='infDPS' and @Id='{id}']");
+            XmlNode targetNodeC = doc.SelectSingleNode($"//*[local-name()='infPedReg' and @Id='{id}']");
 
-            if (targetNode == null)
+            if (targetNode == null && targetNodeC == null)
                 throw new Exception($"Elemento com Id='{id}' não encontrado no XML.");
 
             X509Store store = new X509Store(StoreName.My, StoreLocation.CurrentUser);
@@ -401,6 +371,92 @@ namespace NFSeTokenA3SignerApi.Controllers
             doc.DocumentElement.AppendChild(signatureElement);
 
             return doc.OuterXml;
+        }
+
+        [HttpPost("cancelar-nfse-nacional")]
+        public async Task<IActionResult> CancelarNfseNacional([FromBody] SendingRequest request)
+        {
+            if (request is null ||
+                string.IsNullOrWhiteSpace(request.signedXmlContent) ||
+                string.IsNullOrWhiteSpace(request.chaveAcesso))
+            {
+                return BadRequest(new
+                {
+                    error = "XML assinado, chave de acesso e dados do evento são obrigatórios."
+                });
+            }
+
+            try
+            {
+
+                var xmlBytes = Encoding.UTF8.GetBytes(request.signedXmlContent);
+                var gzippedBase64 = CompressToBase64(xmlBytes);
+
+                var payload = new
+                {
+                    pedidoRegistroEventoXmlGZipB64 = gzippedBase64
+                };
+
+                var json = System.Text.Json.JsonSerializer.Serialize(payload);
+
+                using var httpClient = await CreateHttpClientAsync(request);
+                using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                string endpoint =
+                $"nfse/{request.chaveAcesso}/eventos";
+
+                var response = await httpClient.PostAsync(endpoint, content);
+                var responseBody = await response.Content.ReadAsStringAsync();
+
+                var jsonResponse = System.Text.Json.JsonSerializer.Deserialize<EventoResponse>(responseBody,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return StatusCode((int)response.StatusCode, new
+                    {
+                        error = "Falha ao enviar evento de cancelamento da NFS-e.",
+                        status = (int)response.StatusCode,
+                        detalhes = jsonResponse?.erros ?? responseBody
+                    });
+                }
+
+                if (jsonResponse?.erros != null)
+                {
+                    return BadRequest(new
+                    {
+                        error = "Erro retornado pelo ambiente NFSe.",
+                        detalhes = jsonResponse.erros
+                    });
+                }
+
+                var gzippedBytes = Convert.FromBase64String(jsonResponse?.eventoXmlGZipB64 ?? string.Empty);
+                await using var compressedStream = new MemoryStream(gzippedBytes);
+                await using var decompressedStream = new MemoryStream();
+
+                await using (var gzip = new GZipStream(compressedStream, CompressionMode.Decompress))
+                {
+                    await gzip.CopyToAsync(decompressedStream);
+                }
+
+                var xml = Encoding.UTF8.GetString(decompressedStream.ToArray());
+
+                var doc = new XmlDocument();
+                doc.LoadXml(xml);
+
+                var jsonString = JsonConvert.SerializeXmlNode(doc, Newtonsoft.Json.Formatting.Indented);
+
+                return Ok(JsonDocument.Parse(jsonString));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    error = "Erro interno ao cancelar NFSe.",
+                    details = ex.Message,
+                    stack = ex.StackTrace
+                });
+            }
         }
 
         [HttpGet("health")]
