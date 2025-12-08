@@ -34,6 +34,9 @@ Abaixo um exemplo de como utilizar o serviço (baseado na estrutura comum de API
 * ]);
 
 **EXEMPLO DE DPS**
+
+### **C#**
+```xml
 <?xml version="1.0" encoding="utf-8"?>
 <DPS xmlns="http://www.sped.fazenda.gov.br/nfse" versao="1.00">
 <infDPS Id="{{$infDPS}}">
