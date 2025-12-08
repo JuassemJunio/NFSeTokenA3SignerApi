@@ -1,8 +1,5 @@
 # NFSe Token A3 Signer API
 
-![Net](https://img.shields.io/badge/.NET-512BD4?style=for-the-badge&logo=dotnet&logoColor=white)
-![C#](https://img.shields.io/badge/C%23-239120?style=for-the-badge&logo=c-sharp&logoColor=white)
-
 Esta API foi desenvolvida para simplificar o processo de assinatura digital de Notas Fiscais nacional de Serviço Eletrônica (NFS-e) utilizando certificados digitais do tipo **Token A3**.
 
 Devido à natureza dos certificados A3 (que residem em hardware criptográfico), esta API atua como um middleware local, expondo endpoints para que aplicações web ou outros serviços possam solicitar assinaturas digitais sem interagir diretamente com os drivers do token.
