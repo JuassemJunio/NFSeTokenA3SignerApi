@@ -23,11 +23,12 @@ Para executar este projeto, você precisará de:
 Abaixo um exemplo de como utilizar o serviço (baseado na estrutura comum de APIs de assinatura):
 
 ### 1. Assinar XML em PHP
-**POST**:
-$wsResponse = Http::timeout(120)->post(http://{{IP}}:5000/api/signing/assinar, [
-            'signedXmlContent' => $this->xml,
-            'CnpjEmissor'      => $this->dps['CNPJ'],
-            'Uri'              => sefin.producaorestrita.nfse.gov.br,
-        ]);
-
+**POST**
+* 
+* $wsResponse = Http::timeout(120)->post(http://{{IP}}:5000/api/signing/assinar, [
+* 'signedXmlContent' => $this->xml,
+* 'CnpjEmissor'      => $this->dps['CNPJ'],
+* 'Uri'              => sefin.producaorestrita.nfse.gov.br,
+* ]);
+     
 Recebe um XML bruto e retorna o XML assinado.
