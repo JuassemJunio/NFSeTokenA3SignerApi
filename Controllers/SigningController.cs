@@ -14,7 +14,7 @@ using NFSeTokenA3SignerApi.Models;
 namespace NFSeTokenA3SignerApi.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/")]
     public class SigningController : ControllerBase
     {
 
