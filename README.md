@@ -27,7 +27,7 @@ Abaixo um exemplo de como utilizar o serviço (baseado na estrutura comum de API
 
 **POST**
 ```PHP
-$wsResponse = Http::timeout(120)->post(http://{{IP}}:5000/api/signing/assinar, [
+$wsResponse = Http::timeout(120)->post(http://{{IP}}:5000/api/assinar, [
 'signedXmlContent' => $this->xml,
 'CnpjEmissor'      => $this->dps['CNPJ'],
 'Uri'              => sefin.producaorestrita.nfse.gov.br,
